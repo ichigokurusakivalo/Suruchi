@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Suruchi Chinese - Order Book</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f4f4f4;color:#171717;font-family:Arial,sans-serif}
+header{background:#b52b35;color:white;padding:18px 15px;text-align:center}header h1{margin:0;font-size:23px}header p{margin:5px 0 0;font-size:13px}
+main{max-width:700px;margin:auto;padding:12px 12px 105px}.category{font-size:16px;font-weight:bold;color:#b52b35;margin:18px 2px 8px}
+.item{background:white;border-radius:12px;margin:7px 0;padding:12px;display:flex;justify-content:space-between;align-items:center;gap:10px;box-shadow:0 1px 3px #ddd}
+.item-name{font-weight:bold;font-size:15px}.price{color:#777;font-size:12px;margin-top:4px}.controls{display:flex;flex-direction:column;gap:6px}
+.line{display:flex;align-items:center;gap:5px}.label{width:35px;font-size:10px;font-weight:bold;color:#666}.qty{width:25px;text-align:center;font-weight:bold}
+.qtybtn{width:38px;height:38px;border:0;border-radius:9px;background:#eee;font-size:22px;font-weight:bold;cursor:pointer;touch-action:manipulation}
+.qtybtn:active{background:#ccc}.bottom{position:fixed;bottom:0;left:0;right:0;background:white;border-top:1px solid #ddd;padding:10px 12px}
+.bottom-inner{max-width:700px;margin:auto;display:flex;align-items:center;gap:12px}.total{flex:1}.total small{display:block;color:#777}.total strong{font-size:21px}
+#save{background:#16834b;color:white;border:0;border-radius:10px;padding:14px 18px;font-weight:bold;font-size:15px;cursor:pointer;touch-action:manipulation}
+#message{position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#222;color:white;padding:12px 18px;border-radius:9px;display:none;z-index:10}
+.tabs{display:flex;gap:6px;margin-top:12px}.tab{flex:1;border:0;border-radius:8px;padding:9px;background:rgba(255,255,255,.22);color:white;font-weight:bold}.tab.active{background:white;color:#b52b35}
+.page{max-width:700px;margin:auto;padding:12px}.hidden{display:none}.order-card{background:white;border-radius:12px;padding:13px;margin:8px 0;box-shadow:0 1px 3px #ddd}.order-head{display:flex;justify-content:space-between;font-weight:bold}.order-date{font-size:12px;color:#777;margin:4px 0 9px}.order-line{display:flex;justify-content:space-between;padding:5px 0;border-top:1px solid #eee;font-size:14px}.report-box{background:white;border-radius:12px;padding:15px;margin:8px 0;box-shadow:0 1px 3px #ddd}.stats{display:grid;grid-template-columns:1fr 1fr;gap:8px}.stat{background:#f5f5f5;border-radius:10px;padding:12px}.stat small{color:#777}.stat b{display:block;font-size:20px;margin-top:4px}.delete{margin-top:10px;border:0;background:#fee2e2;color:#a11;border-radius:7px;padding:7px;font-weight:bold}
+</style>
+</head>
+<body>
+<header>
+<h1>🍜 SURUCHI CHINESE</h1>
+<p>Order Book</p>
+<div class="tabs">
+<button class="tab active" type="button" data-tab="new">New Order</button>
+<button class="tab" type="button" data-tab="orders">Orders</button>
+<button class="tab" type="button" data-tab="reports">Reports</button>
+</div>
+</header>
+<section id="newPage"><main id="menu"><div class="category">NON-VEG</div>
+
+<div class="item">
+  <div>
+    <div class="item-name">Chicken Fried Rice</div>
+    <div class="price">Full ₹140 · Half ₹90</div>
+  </div>
+  <div class="controls">
+    <div class="line"><span class="label">FULL</span>
+      <button class="qtybtn" type="button" data-i="0" data-s="Full" data-a="-1">−</button>
+      <span class="qty" id="qty-0-Full">0</span>
+      <button class="qtybtn" type="button" data-i="0" data-s="Full" data-a="1">+</button>
+    </div>
+    <div class="line"><span class="label">HALF</span>
+      <button class="qtybtn" type="button" data-i="0" data-s="Half" data-a="-1">−</button>
+      <span class="qty" id="qty-0-Half">0</span>
+      <button class="qtybtn" type="button" data-i="0" data-s="Half" data-a="1">+</button>
+    </div>
+  </div>
+</div>
+
+<div class="item">
+  <div>
+    <div class="item-name">Chicken Schezwan Rice</div>
+    <div class="price">Full ₹150 · Half ₹90</div>
+  </div>
+  <div class="controls">
+    <div class="line"><span class="label">FULL</span>
+      <button class="qtybtn" type="button" data-i="1" data-s="Full" data-a="-1">−</button>
+      <span class="qty" id="qty-1-Full">0</span>
+      <button class="qtybtn" type="button" data-i="1" data-s="Full" data-a="1">+</button>
+    </div>
+    <div class="line"><span class="label">HALF</span>
+      <button class="qtybtn" type="button" data-i="1" data-s="Half" data-a="-1">−</button>
+      <span class="qty" id="qty-1-Half">0</span>
+      <button class="qtybtn" type="button" data-i="1" data-s="Half" data-a="1">+</button>
+    </div>
+  </div>
+</div>
+
+<div class="item">
+  <div>
+    <div class="item-name">Chicken Triple Rice</div>
+    <div class="price">Full ₹180 · Half ₹110</div>
+  </div>
+  <div class="controls">
+    <div class="line"><span class="label">FULL</span>
+      <button class="qtybtn" type="button" data-i="2" data-s="Full" data-a="-1">−</button>
+      <span class="qty" id="qty-2-Full">0</span>
+      <button class="qtybtn" type="button" data-i="2" data-s="Full" data-a="1">+</button>
+    </div>
+    <div class="line"><span class="label">HALF</span>
+      <button class="qtybtn" type="button" data-i="2" data-s="Half" data-a="-1">−</button>
+      <span class="qty" id="qty-2-Half">0</span>
+      <button class="qtybtn" type="button" data-i="2" data-s="Half" data-a="1">+</button>
+    </div>
+  </div>
+</div>
+
+<div class="item">
+  <div>
+    <div class="item-name">Chicken Hakka Noodles</div>
+    <div class="price">Full ₹140 · Half ₹90</div>
+  </div>
+  <div class="controls">
+    <div class="line"><span class="label">FULL</span>
+      <button class="qtybtn" type="button" data-i="3" data-s="Full" data-a="-1">−</button>
+      <span class="qty" id="qty-3-Full">0</span>
+      <button class="qtybtn" type="button" data-i="3" data-s="Full" data-a="1">+</button>
+    </div>
+    <div class="line"><span class="label">HALF</span>
+      <button class="qtybtn" type="button" data-i="3" data-s="Half" data-a="-1">−</button>
+      <span class="qty" id="qty-3-Half">0</span>
+      <button class="qtybtn" type="button" data-i="3" data-s="Half" data-a="1">+</button>
+    </div>
+  </div>
+</div>
+
+<div class="item">
+  <div>
+    <div class="item-name">Chicken Schezwan Noodles</div>
+    <div class="price">Full ₹150 · Half ₹100</div>
+  </div>
+  <div class="controls">
+    <div class="line"><span class="label">FULL</span>
+      <button class="qtybtn" type="button" data-i="4" data-s="Full" data-a="-1">−</button>
+      <span class="qty" id="qty-4-Full">0</span>
+      <button class="qtybtn" type="button" data-i="4" data-s="Full" data-a="1">+</button>
+    </div>
+    <div class="line"><span class="label">HALF</span>
+      <button class="qtybtn" type="button" data-i="4" data-s="Half" data-a="-1">−</button>
+      <span class="qty" id="qty-4-Half">0</span>
+      <button class="qtybtn" type="button" data-i="4" data-s="Half" data-a="1">+</button>
+    </div>
+  </div>
+</div>
+
+<div class="item">
+  <div>
+    <div class="item-name">Chicken Triple Noodles</div>
+    <div class="price">Full ₹180 · Half ₹110</div>
+  </div>
+  <div class="controls">
+    <div class="line"><span class="label">FULL</span>
+      <button class="qtybtn" type="button" data-i="5" data-s="Full" data-a="-1">−</button>
+      <span class="qty" id="qty-5-Full">0</span>
+      <button class="qtybtn" type="button" data-i="5" data-s="Full" data-a="1">+</button>
+    </div>
+    <div class="line"><span class="label">HALF</span>
+      <button class="qtybtn" type="button" data-i="5" data-s="Half" data-a="-1">−</button>
+      <span class="qty" id="qty-5-Half">0</span>
+      <button class="qtybtn" type="button" data-i="5" data-s="Half" data-a="1">+</button>
+    </div>
+  </div>
+</div>
+
+<div class="item">
+  <div>
+    <div class="item-name">Chicken Manchurian</div>
+    <div class="price">Full ₹180 · Half ₹90</div>
+  </div>
+  <div class="controls">
+    <div class="line"><span class="label">FULL</span>
+      <button class="qtybtn" type="button" data-i="6" data-s="Full" data-a="-1">−</button>
+      <span class="qty" id="qty-6-Full">0</span>
+      <button class="qtybtn" type="button" data-i="6" data-s="Full" data-a="1">+</button>
+    </div>
+    <div class="line"><span class="label">HALF</span>
+      <button class="qtybtn" type="button" data-i="6" data-s="Half" data-a="-1">−</button>
+      <span class="qty" id="qty-6-Half">0</span>
+      <button class="qtybtn" type="button" data-i="6" data-s="Half" data-a="1">+</button>
+    </div>
+  </div>
+</div>
+
+<div class="item">
+  <div>
+    <div class="item-name">Chicken Soup</div>
+    <div class="price">Full ₹160 · Half ₹90</div>
+  </div>
+  <div class="controls">
+    <div class="line"><span class="label">FULL</span>
+      <button class="qtybtn" type="button" data-i="7" data-s="Full" data-a="-1">−</button>
+      <span class="qty" id="qty-7-Full">0</span>
+      <button class="qtybtn" type="button" data-i="7" data-s="Full" data-a="1">+</button>
+    </div>
+    <div class="line"><span class="label">HALF</span>
+      <button class="qtybtn" type="button" data-i="7" data-s="Half" data-a="-1">−</button>
+      <span class="qty" id="qty-7-Half">0</span>
+      <button class="qtybtn" type="button" data-i="7" data-s="Half" data-a="1">+</button>
+    </div>
+  </div>
+</div>
+
+<div class="item">
+  <div>
+    <div class="item-name">Chicken Lollipops</div>
+    <div class="price">Full ₹210 · Half ₹120</div>
+  </div>
+  <div class="controls">
+    <div class="line"><span class="label">FULL</span>
+      <button class="qtybtn" type="button" data-i="8" data-s="Full" data-a="-1">−</button>
+      <span class="qty" id="qty-8-Full">0</span>
+      <button class="qtybtn" type="button" data-i="8" data-s="Full" data-a="1">+</button>
+    </div>
+    <div class="line"><span class="label">HALF</span>
+      <button class="qtybtn" type="button" data-i="8" data-s="Half" data-a="-1">−</button>
+      <span class="qty" id="qty-8-Half">0</span>
+      <button class="qtybtn" type="button" data-i="8" data-s="Half" data-a="1">+</button>
+    </div>
+  </div>
+</div>
+
+<div class="item">
+  <div>
+    <div class="item-name">Chicken Chilli</div>
+    <div class="price">Full ₹210 · Half ₹120</div>
+  </div>
+  <div class="controls">
+    <div class="line"><span class="label">FULL</span>
+      <button class="qtybtn" type="button" data-i="9" data-s="Full" data-a="-1">−</button>
+      <span class="qty" id="qty-9-Full">0</span>
+      <button class="qtybtn" type="button" data-i="9" data-s="Full" data-a="1">+</button>
+    </div>
+    <div class="line"><span class="label">HALF</span>
+      <button class="qtybtn" type="button" data-i="9" data-s="Half" data-a="-1">−</button>
+      <span class="qty" id="qty-9-Half">0</span>
+      <button class="qtybtn" type="button" data-i="9" data-s="Half" data-a="1">+</button>
+    </div>
+  </div>
+</div>
+<div class="category">VEG</div>
+
+<div class="item">
+  <div>
+    <div class="item-name">Veg Manchurian</div>
+    <div class="price">Full ₹120 · Half ₹70</div>
+  </div>
+  <div class="controls">
+    <div class="line"><span class="label">FULL</span>
+      <button class="qtybtn" type="button" data-i="10" data-s="Full" data-a="-1">−</button>
+      <span class="qty" id="qty-10-Full">0</span>
+      <button class="qtybtn" type="button" data-i="10" data-s="Full" data-a="1">+</button>
+    </div>
+    <div class="line"><span class="label">HALF</span>
+      <button class="qtybtn" type="button" data-i="10" data-s="Half" data-a="-1">−</button>
+      <span class="qty" id="qty-10-Half">0</span>
+      <button class="qtybtn" type="button" data-i="10" data-s="Half" data-a="1">+</button>
+    </div>
+  </div>
+</div>
+
+<div class="item">
+  <div>
+    <div class="item-name">Veg Hakka Noodles</div>
+    <div class="price">Full ₹120 · Half ₹70</div>
+  </div>
+  <div class="controls">
+    <div class="line"><span class="label">FULL</span>
+      <button class="qtybtn" type="button" data-i="11" data-s="Full" data-a="-1">−</button>
+      <span class="qty" id="qty-11-Full">0</span>
+      <button class="qtybtn" type="button" data-i="11" data-s="Full" data-a="1">+</button>
+    </div>
+    <div class="line"><span class="label">HALF</span>
+      <button class="qtybtn" type="button" data-i="11" data-s="Half" data-a="-1">−</button>
+      <span class="qty" id="qty-11-Half">0</span>
+      <button class="qtybtn" type="button" data-i="11" data-s="Half" data-a="1">+</button>
+    </div>
+  </div>
+</div>
+
+<div class="item">
+  <div>
+    <div class="item-name">Veg Schezwan Noodles</div>
+    <div class="price">Full ₹130 · Half ₹80</div>
+  </div>
+  <div class="controls">
+    <div class="line"><span class="label">FULL</span>
+      <button class="qtybtn" type="button" data-i="12" data-s="Full" data-a="-1">−</button>
+      <span class="qty" id="qty-12-Full">0</span>
+      <button class="qtybtn" type="button" data-i="12" data-s="Full" data-a="1">+</button>
+    </div>
+    <div class="line"><span class="label">HALF</span>
+      <button class="qtybtn" type="button" data-i="12" data-s="Half" data-a="-1">−</button>
+      <span class="qty" id="qty-12-Half">0</span>
+      <button class="qtybtn" type="button" data-i="12" data-s="Half" data-a="1">+</button>
+    </div>
+  </div>
+</div>
+
+<div class="item">
+  <div>
+    <div class="item-name">Veg Triple Noodles</div>
+    <div class="price">Full ₹160 · Half ₹90</div>
+  </div>
+  <div class="controls">
+    <div class="line"><span class="label">FULL</span>
+      <button class="qtybtn" type="button" data-i="13" data-s="Full" data-a="-1">−</button>
+      <span class="qty" id="qty-13-Full">0</span>
+      <button class="qtybtn" type="button" data-i="13" data-s="Full" data-a="1">+</button>
+    </div>
+    <div class="line"><span class="label">HALF</span>
+      <button class="qtybtn" type="button" data-i="13" data-s="Half" data-a="-1">−</button>
+      <span class="qty" id="qty-13-Half">0</span>
+      <button class="qtybtn" type="button" data-i="13" data-s="Half" data-a="1">+</button>
+    </div>
+  </div>
+</div>
+
+<div class="item">
+  <div>
+    <div class="item-name">Veg Fried Rice</div>
+    <div class="price">Full ₹120 · Half ₹70</div>
+  </div>
+  <div class="controls">
+    <div class="line"><span class="label">FULL</span>
+      <button class="qtybtn" type="button" data-i="14" data-s="Full" data-a="-1">−</button>
+      <span class="qty" id="qty-14-Full">0</span>
+      <button class="qtybtn" type="button" data-i="14" data-s="Full" data-a="1">+</button>
+    </div>
+    <div class="line"><span class="label">HALF</span>
+      <button class="qtybtn" type="button" data-i="14" data-s="Half" data-a="-1">−</button>
+      <span class="qty" id="qty-14-Half">0</span>
+      <button class="qtybtn" type="button" data-i="14" data-s="Half" data-a="1">+</button>
+    </div>
+  </div>
+</div>
+
+<div class="item">
+  <div>
+    <div class="item-name">Veg Schezwan Rice</div>
+    <div class="price">Full ₹130 · Half ₹70</div>
+  </div>
+  <div class="controls">
+    <div class="line"><span class="label">FULL</span>
+      <button class="qtybtn" type="button" data-i="15" data-s="Full" data-a="-1">−</button>
+      <span class="qty" id="qty-15-Full">0</span>
+      <button class="qtybtn" type="button" data-i="15" data-s="Full" data-a="1">+</button>
+    </div>
+    <div class="line"><span class="label">HALF</span>
+      <button class="qtybtn" type="button" data-i="15" data-s="Half" data-a="-1">−</button>
+      <span class="qty" id="qty-15-Half">0</span>
+      <button class="qtybtn" type="button" data-i="15" data-s="Half" data-a="1">+</button>
+    </div>
+  </div>
+</div>
+
+<div class="item">
+  <div>
+    <div class="item-name">Veg Triple Rice</div>
+    <div class="price">Full ₹160 · Half ₹90</div>
+  </div>
+  <div class="controls">
+    <div class="line"><span class="label">FULL</span>
+      <button class="qtybtn" type="button" data-i="16" data-s="Full" data-a="-1">−</button>
+      <span class="qty" id="qty-16-Full">0</span>
+      <button class="qtybtn" type="button" data-i="16" data-s="Full" data-a="1">+</button>
+    </div>
+    <div class="line"><span class="label">HALF</span>
+      <button class="qtybtn" type="button" data-i="16" data-s="Half" data-a="-1">−</button>
+      <span class="qty" id="qty-16-Half">0</span>
+      <button class="qtybtn" type="button" data-i="16" data-s="Half" data-a="1">+</button>
+    </div>
+  </div>
+</div>
+
+<div class="item">
+  <div>
+    <div class="item-name">Veg Manchow Soup</div>
+    <div class="price">Full ₹90 · Half ₹50</div>
+  </div>
+  <div class="controls">
+    <div class="line"><span class="label">FULL</span>
+      <button class="qtybtn" type="button" data-i="17" data-s="Full" data-a="-1">−</button>
+      <span class="qty" id="qty-17-Full">0</span>
+      <button class="qtybtn" type="button" data-i="17" data-s="Full" data-a="1">+</button>
+    </div>
+    <div class="line"><span class="label">HALF</span>
+      <button class="qtybtn" type="button" data-i="17" data-s="Half" data-a="-1">−</button>
+      <span class="qty" id="qty-17-Half">0</span>
+      <button class="qtybtn" type="button" data-i="17" data-s="Half" data-a="1">+</button>
+    </div>
+  </div>
+</div>
+
+<div class="item">
+  <div>
+    <div class="item-name">Veg Mushroom Soup</div>
+    <div class="price">Full ₹90 · Half ₹50</div>
+  </div>
+  <div class="controls">
+    <div class="line"><span class="label">FULL</span>
+      <button class="qtybtn" type="button" data-i="18" data-s="Full" data-a="-1">−</button>
+      <span class="qty" id="qty-18-Full">0</span>
+      <button class="qtybtn" type="button" data-i="18" data-s="Full" data-a="1">+</button>
+    </div>
+    <div class="line"><span class="label">HALF</span>
+      <button class="qtybtn" type="button" data-i="18" data-s="Half" data-a="-1">−</button>
+      <span class="qty" id="qty-18-Half">0</span>
+      <button class="qtybtn" type="button" data-i="18" data-s="Half" data-a="1">+</button>
+    </div>
+  </div>
+</div></main></section>
+<section id="ordersPage" class="page hidden">
+  <h2>Saved Orders</h2>
+  <div id="ordersList"></div>
+</section>
+<section id="reportsPage" class="page hidden">
+  <h2>Monthly Report</h2>
+  <div class="report-box">
+    <input id="reportMonth" type="month">
+  </div>
+  <div id="reportContent"></div>
+</section>
+
+<div id="message"></div>
+<div class="bottom"><div class="bottom-inner"><div class="total"><small id="itemCount">0 items</small><strong id="grandTotal">₹0</strong></div><button id="save" type="button">SAVE ORDER</button></div></div>
+
+<script>
+const MENU = [{"category": "NON-VEG", "name": "Chicken Fried Rice", "full": 140, "half": 90}, {"category": "NON-VEG", "name": "Chicken Schezwan Rice", "full": 150, "half": 90}, {"category": "NON-VEG", "name": "Chicken Triple Rice", "full": 180, "half": 110}, {"category": "NON-VEG", "name": "Chicken Hakka Noodles", "full": 140, "half": 90}, {"category": "NON-VEG", "name": "Chicken Schezwan Noodles", "full": 150, "half": 100}, {"category": "NON-VEG", "name": "Chicken Triple Noodles", "full": 180, "half": 110}, {"category": "NON-VEG", "name": "Chicken Manchurian", "full": 180, "half": 90}, {"category": "NON-VEG", "name": "Chicken Soup", "full": 160, "half": 90}, {"category": "NON-VEG", "name": "Chicken Lollipops", "full": 210, "half": 120}, {"category": "NON-VEG", "name": "Chicken Chilli", "full": 210, "half": 120}, {"category": "VEG", "name": "Veg Manchurian", "full": 120, "half": 70}, {"category": "VEG", "name": "Veg Hakka Noodles", "full": 120, "half": 70}, {"category": "VEG", "name": "Veg Schezwan Noodles", "full": 130, "half": 80}, {"category": "VEG", "name": "Veg Triple Noodles", "full": 160, "half": 90}, {"category": "VEG", "name": "Veg Fried Rice", "full": 120, "half": 70}, {"category": "VEG", "name": "Veg Schezwan Rice", "full": 130, "half": 70}, {"category": "VEG", "name": "Veg Triple Rice", "full": 160, "half": 90}, {"category": "VEG", "name": "Veg Manchow Soup", "full": 90, "half": 50}, {"category": "VEG", "name": "Veg Mushroom Soup", "full": 90, "half": 50}];
+const cart = {};
+
+function key(index,size){ return index+"_"+size; }
+function money(value){ return "₹"+value.toLocaleString("en-IN"); }
+
+function showMessage(text){
+  const box=document.getElementById("message");
+  box.textContent=text;
+  box.style.display="block";
+  setTimeout(function(){ box.style.display="none"; },1600);
+}
+
+function changeQuantity(index,size,amount){
+  const k=key(index,size);
+  if(!cart[k]) cart[k]=0;
+  cart[k]+=amount;
+  if(cart[k]<0) cart[k]=0;
+  document.getElementById("qty-"+index+"-"+size).textContent=cart[k];
+  updateTotal();
+}
+
+function updateTotal(){
+  let total=0,count=0;
+  MENU.forEach(function(item,index){
+    const full=cart[key(index,"Full")]||0;
+    const half=cart[key(index,"Half")]||0;
+    total+=full*item.full+half*item.half;
+    count+=full+half;
+  });
+  document.getElementById("itemCount").textContent=count+(count===1?" item":" items");
+  document.getElementById("grandTotal").textContent=money(total);
+}
+
+document.getElementById("save").addEventListener("click",function(){
+  let total=0,count=0,items=[];
+  MENU.forEach(function(item,index){
+    const full=cart[key(index,"Full")]||0;
+    const half=cart[key(index,"Half")]||0;
+    if(full>0){items.push({name:item.name,size:"Full",qty:full,price:item.full});total+=full*item.full;count+=full;}
+    if(half>0){items.push({name:item.name,size:"Half",qty:half,price:item.half});total+=half*item.half;count+=half;}
+  });
+  if(count===0){showMessage("Add items to the order first");return;}
+  let orders=getOrders();
+  orders.push({id:Date.now(),date:new Date().toLocaleString("en-IN"),dateISO:new Date().toISOString(),items:items,total:total});
+  saveOrders(orders);
+  MENU.forEach(function(item,index){
+    cart[key(index,"Full")]=0; cart[key(index,"Half")]=0;
+    document.getElementById("qty-"+index+"-Full").textContent="0";
+    document.getElementById("qty-"+index+"-Half").textContent="0";
+  });
+  updateTotal();
+  showMessage("✓ Order saved - "+money(total));
+});
+
+
+function getOrders(){
+  try { return JSON.parse(localStorage.getItem("suruchi_orders") || "[]"); }
+  catch(e){ return []; }
+}
+function saveOrders(list){
+  try { localStorage.setItem("suruchi_orders", JSON.stringify(list)); } catch(e){}
+}
+function renderOrders(){
+  const root=document.getElementById("ordersList");
+  const list=getOrders().slice().reverse();
+  root.innerHTML="";
+  if(!list.length){
+    root.innerHTML='<div class="order-card">No saved orders yet.</div>';
+    return;
+  }
+  list.forEach(function(order,displayIndex){
+    const card=document.createElement("div");
+    card.className="order-card";
+    let lines=(order.items||[]).map(function(item){
+      return '<div class="order-line"><span>'+item.name+' - '+item.size+' × '+item.qty+'</span><b>₹'+(item.qty*item.price)+'</b></div>';
+    }).join("");
+    card.innerHTML='<div class="order-head"><span>Order #'+(list.length-displayIndex)+'</span><span>₹'+order.total+'</span></div>'+
+      '<div class="order-date">'+order.date+'</div>'+lines+
+      '<button class="delete" type="button">Delete Order</button>';
+    card.querySelector(".delete").addEventListener("click",function(){
+      const all=getOrders();
+      const target=order.id;
+      saveOrders(all.filter(function(x){return x.id!==target;}));
+      renderOrders();
+      renderReport();
+    });
+    root.appendChild(card);
+  });
+}
+function renderReport(){
+  const monthInput=document.getElementById("reportMonth");
+  const month=monthInput.value || new Date().toISOString().slice(0,7);
+  monthInput.value=month;
+  const list=getOrders().filter(function(o){
+    return o.dateISO ? o.dateISO.slice(0,7)===month : false;
+  });
+  let sales=0, units=0, itemMap={};
+  list.forEach(function(o){
+    sales+=Number(o.total)||0;
+    (o.items||[]).forEach(function(x){
+      units+=Number(x.qty)||0;
+      const k=x.name+" - "+x.size;
+      itemMap[k]=(itemMap[k]||0)+Number(x.qty);
+    });
+  });
+  const ranking=Object.entries(itemMap).sort(function(a,b){return b[1]-a[1];});
+  document.getElementById("reportContent").innerHTML=
+    '<div class="stats">'+
+    '<div class="stat"><small>Orders</small><b>'+list.length+'</b></div>'+
+    '<div class="stat"><small>Total Sales</small><b>₹'+sales+'</b></div>'+
+    '<div class="stat"><small>Items Sold</small><b>'+units+'</b></div>'+
+    '<div class="stat"><small>Average Order</small><b>₹'+(list.length?Math.round(sales/list.length):0)+'</b></div>'+
+    '</div>'+
+    '<div class="report-box"><b>Items Sold</b>'+
+    (ranking.length ? ranking.map(function(x){return '<div class="order-line"><span>'+x[0]+'</span><b>'+x[1]+'</b></div>';}).join("") : '<p style="color:#777">No orders for this month.</p>')+
+    '</div>';
+}
+function showPage(page){
+  document.getElementById("newPage").classList.toggle("hidden",page!=="new");
+  document.getElementById("ordersPage").classList.toggle("hidden",page!=="orders");
+  document.getElementById("reportsPage").classList.toggle("hidden",page!=="reports");
+  document.querySelectorAll(".tab").forEach(function(b){b.classList.toggle("active",b.dataset.tab===page);});
+  document.querySelector(".bottom").style.display=page==="new"?"block":"none";
+  if(page==="orders") renderOrders();
+  if(page==="reports") renderReport();
+}
+document.querySelectorAll(".tab").forEach(function(button){
+  button.addEventListener("click",function(){showPage(this.dataset.tab);});
+});
+document.getElementById("reportMonth").addEventListener("change",renderReport);
+
+document.querySelectorAll(".qtybtn").forEach(function(button){
+  button.addEventListener("click", function(){
+    changeQuantity(
+      Number(this.dataset.i),
+      this.dataset.s,
+      Number(this.dataset.a)
+    );
+  });
+});
+
+updateTotal();
+</script>
+</body>
+</html>
